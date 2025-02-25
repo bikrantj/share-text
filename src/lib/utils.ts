@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { intervalToDuration } from "date-fns";
 import { customAlphabet } from "nanoid";
+import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -16,3 +17,22 @@ export const generateRandomId = () => {
 export const getExpiryDate = (hours: number) => {
   return new Date(Date.now() + hours * 60 * 60 * 1000);
 };
+
+export function getExpiryDifference(createdAt: Date, expiresAt: Date) {
+  const now = new Date(); // Current time
+  const expiryDate = new Date(expiresAt); // Convert expiresAt to a Date object
+
+  // If the expiry date is in the past, return "Expired"
+  if (expiryDate < now) {
+    return "Expired";
+  }
+
+  // Calculate the difference between now and the expiry date
+  const duration = intervalToDuration({
+    start: now,
+    end: expiryDate,
+  });
+
+  // Format the duration into a human-readable string
+  return `Expires in ${duration.days} days, ${duration.hours} hours, ${duration.minutes} minutes`;
+}

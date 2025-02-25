@@ -1,18 +1,15 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
-import { PlusCircle, Share2, Search, Trash2Icon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { addAbortListener } from "events";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { createText } from "@/actions/create-text";
+import { Button } from "@/components/ui/button";
+import { Callout } from "@/components/ui/callout";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { cn, generateRandomId } from "@/lib/utils";
+import { PlusCircle, Trash2Icon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
+import { useEffect, useRef, useState } from "react";
 export default function Home() {
-  const { execute, isExecuting } = useAction(createText);
+  const { execute, isExecuting, result } = useAction(createText);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement | null>>(
     new Map()
@@ -20,11 +17,13 @@ export default function Home() {
   const lastAddedIdRef = useRef<string | null>(null);
 
   const [textAreas, setTextAreas] = useState<Map<string, string>>(
-    new Map([[uuidv4(), ""]])
+    new Map([[generateRandomId(), ""]])
   );
 
   const addTextArea = () => {
-    setTextAreas((prev) => new Map(prev).set(uuidv4(), ""));
+    const newId = generateRandomId();
+    lastAddedIdRef.current = newId;
+    setTextAreas((prev) => new Map(prev).set(newId, ""));
   };
 
   // Update a specific textarea
@@ -34,6 +33,7 @@ export default function Home() {
       newMap.set(id, value);
       return newMap;
     });
+    lastAddedIdRef.current = null;
   };
 
   const deleteTextArea = (id: string) => {
@@ -64,6 +64,7 @@ export default function Home() {
   }, [textAreas.size]);
   // Focus the last added textarea when it changes
   useEffect(() => {
+    console.log("Changing focus!!");
     if (lastAddedIdRef.current) {
       const textarea = textareaRefs.current.get(lastAddedIdRef.current);
       if (textarea) {
@@ -71,7 +72,6 @@ export default function Home() {
       }
     }
   }, [textAreas.size]); // Run when the number of textareas changes
-
   // Function to set the ref for a textarea
   const setTextareaRef = (id: string, element: HTMLTextAreaElement | null) => {
     if (element) {
@@ -90,62 +90,70 @@ export default function Home() {
     execute(texts);
   };
   return (
-    <div className="min-h-[100dvh] flex bg-indigo-100/30 flex-col gap-4 p-8 md:p-16">
-      <div className="flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold text-indigo-700">Text Share</h1>
-        <p>Share your text with one-click</p>
-      </div>
-      <div className="flex items-center w-fit mx-auto gap-2 justify-center">
-        <Input placeholder="Paste 4-digit code" />
-        <Button>Search</Button>
-      </div>
-      <section className="bg-white mt-8 p-4 rounded-lg border">
-        <div></div>
-        <div className="flex justify-end">
-          <Button onClick={handleShare} isLoading={isExecuting}>
-            Share
+    <section className="bg-white mt-8 p-4 rounded-lg border">
+      <div className="flex justify-between items-center">
+        {result.data?.code && (
+          <div className="flex-1">
+            <Callout
+              variant="success"
+              heading={
+                <span>
+                  Text Shared! Share Code:{" "}
+                  <code className="text-sm border rounded bg-background p-1">
+                    {result.data.code}
+                  </code>
+                </span>
+              }
+            ></Callout>
+          </div>
+        )}
+        <div className="flex-1 justify-end flex">
+          <Button onClick={handleShare} disabled={isExecuting}>
+            {isExecuting ? "Sharing..." : "Share"}
           </Button>
         </div>
-        <ScrollArea
-          className={cn(
-            "my-4",
-            textAreas.size === 1 ? "h-[250px]" : "h-[450px]"
-          )}
-          ref={scrollAreaRef}
-        >
-          <div className="space-y-4">
-            {[...textAreas.entries()].map(([id, text]) => (
-              <div key={id} className="relative flex gap-1 pr-4 group">
-                {/* Hide this button is only one textarea */}
-                <Textarea
-                  disabled={isExecuting}
-                  ref={(el) => setTextareaRef(id, el)}
-                  value={text}
-                  onChange={(e) => updateText(id, e.target.value)}
-                  placeholder="Paste your text here..."
-                />
-                {textAreas.size > 1 && (
-                  <div className="ml-auto">
-                    <Button
-                      disabled={isExecuting}
-                      onClick={() => deleteTextArea(id)}
-                      size="icon"
-                      variant="outline"
-                      className="ml-auto text-destructive hover:text-destructive/80"
-                    >
-                      <Trash2Icon size={16} />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-        <Button onClick={addTextArea} variant="outline" disabled={isExecuting}>
+      </div>
+
+      <ScrollArea
+        ref={scrollAreaRef}
+        className={cn(
+          "mt-4 pr-4",
+          textAreas.size === 1 ? "h-[35vh]" : "h-[60vh]"
+        )}
+        data-slot="scroll-area"
+      >
+        <div className="flex flex-col gap-4">
+          {Array.from(textAreas.entries()).map(([id, text]) => (
+            <div key={id} className="flex gap-2">
+              <Textarea
+                ref={(el) => setTextareaRef(id, el)}
+                value={text}
+                onChange={(e) => updateText(id, e.target.value)}
+                placeholder="Type something..."
+                className="flex-1"
+              />
+              {textAreas.size > 1 && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => deleteTextArea(id)}
+                  disabled={textAreas.size === 1}
+                  className="text-destructive hover:text-destructive/80"
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+
+      <div className="flex justify-between mt-4">
+        <Button variant="outline" onClick={addTextArea} className="gap-1">
           <PlusCircle className="h-4 w-4" />
           Add Another Text
         </Button>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

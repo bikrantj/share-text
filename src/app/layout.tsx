@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SearchCode } from "@/components/search-code";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +29,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="min-h-[100dvh] flex bg-indigo-100/30 flex-col gap-4 p-8 md:p-16">
+          <div className="flex flex-col items-center justify-center">
+            <Link href="/">
+              <h1 className="text-3xl font-bold text-indigo-700">Text Share</h1>
+            </Link>
+            <p>Share your text with one-click</p>
+          </div>
+          <SearchCode />
+          {children}
+        </div>
       </body>
     </html>
   );
