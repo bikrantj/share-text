@@ -1,12 +1,22 @@
-import { integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  integer,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
-export const textTable = pgTable("text", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  text: varchar("text").notNull(),
-  key: varchar("key", { length: 6 }).notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
+export const codes = pgTable("codes", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  code: varchar("code", { length: 4 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const texts = pgTable("texts", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  content: text("content").notNull(),
+  codeId: integer("code_id")
     .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
+    .references(() => codes.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
