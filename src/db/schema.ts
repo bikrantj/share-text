@@ -1,3 +1,4 @@
+import { InferSelectViewModel } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -10,6 +11,7 @@ export const codes = pgTable("codes", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   code: varchar("code", { length: 4 }).notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
 });
 
 export const texts = pgTable("texts", {
@@ -20,3 +22,6 @@ export const texts = pgTable("texts", {
     .references(() => codes.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export type Code = typeof codes.$inferSelect;
+export type Text = typeof texts.$inferSelect;

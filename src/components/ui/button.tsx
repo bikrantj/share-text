@@ -1,11 +1,12 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { LoaderIcon } from "lucide-react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -32,27 +33,46 @@ const buttonVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 function Button({
   className,
   variant,
   size,
+  ref,
+  isLoading,
+  disabled,
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean;
+    isLoading?: boolean;
   }) {
-  const Comp = asChild ? Slot : "button"
+  const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
-      data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      ref={ref}
+      disabled={isLoading || disabled}
       {...props}
-    />
-  )
+    >
+      <span
+        className={cn(
+          "inline-flex items-center gap-1",
+          isLoading && "invisible"
+        )}
+      >
+        {props.children}
+      </span>
+      {isLoading && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <LoaderIcon className="animate-spin" />
+        </span>
+      )}
+    </Comp>
+  );
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };

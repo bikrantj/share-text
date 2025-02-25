@@ -9,8 +9,10 @@ import { addAbortListener } from "events";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-
+import { createText } from "@/actions/create-text";
+import { useAction } from "next-safe-action/hooks";
 export default function Home() {
+  const { execute, isExecuting } = useAction(createText);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement | null>>(
     new Map()
@@ -83,6 +85,9 @@ export default function Home() {
 
   const handleShare = () => {
     console.log(textAreas);
+    const texts = Array.from(textAreas.values()).filter(Boolean);
+    if (!texts.length) return;
+    execute(texts);
   };
   return (
     <div className="min-h-[100dvh] flex bg-indigo-100/30 flex-col gap-4 p-8 md:p-16">
@@ -97,7 +102,9 @@ export default function Home() {
       <section className="bg-white mt-8 p-4 rounded-lg border">
         <div></div>
         <div className="flex justify-end">
-          <Button onClick={handleShare}>Share</Button>
+          <Button onClick={handleShare} isLoading={isExecuting}>
+            Share
+          </Button>
         </div>
         <ScrollArea
           className={cn(
@@ -111,6 +118,7 @@ export default function Home() {
               <div key={id} className="relative flex gap-1 pr-4 group">
                 {/* Hide this button is only one textarea */}
                 <Textarea
+                  disabled={isExecuting}
                   ref={(el) => setTextareaRef(id, el)}
                   value={text}
                   onChange={(e) => updateText(id, e.target.value)}
@@ -119,6 +127,7 @@ export default function Home() {
                 {textAreas.size > 1 && (
                   <div className="ml-auto">
                     <Button
+                      disabled={isExecuting}
                       onClick={() => deleteTextArea(id)}
                       size="icon"
                       variant="outline"
@@ -132,7 +141,7 @@ export default function Home() {
             ))}
           </div>
         </ScrollArea>
-        <Button onClick={addTextArea} variant="outline">
+        <Button onClick={addTextArea} variant="outline" disabled={isExecuting}>
           <PlusCircle className="h-4 w-4" />
           Add Another Text
         </Button>

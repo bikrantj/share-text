@@ -8,6 +8,13 @@
       "when": 1740492550172,
       "tag": "0000_bright_wrecking_crew",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1740494840747,
+      "tag": "0001_elite_virginia_dare",
+      "breakpoints": true
     }
   ]
 }
