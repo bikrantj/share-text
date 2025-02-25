@@ -1,4 +1,3 @@
-import { InferSelectViewModel } from "drizzle-orm";
 import {
   pgTable,
   text,
