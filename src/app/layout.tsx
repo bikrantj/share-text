@@ -4,7 +4,6 @@ import "./globals.css";
 import { SearchCode } from "@/components/search-code";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ShapesIcon } from "lucide-react";
 import Image from "next/image";
 
 const geistSans = Geist({
