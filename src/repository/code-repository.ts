@@ -2,7 +2,6 @@ import { db } from "@/db";
 import { codes } from "@/db/schema";
 import { getExpiryDate } from "@/lib/utils";
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 
 const EXPIRES_IN = Number(process.env.CODE_EXPIRES_IN!);
 

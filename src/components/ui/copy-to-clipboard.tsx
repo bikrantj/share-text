@@ -1,25 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import { CheckIcon, CopyIcon } from "lucide-react";
-import { Button } from "./button";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import { CheckIcon, CopyIcon } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Button } from "./button";
 
 export const CopyToClipboard = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
-  const [copiedText, copy] = useCopyToClipboard();
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  // Initialize AudioContext on component mount
-  useEffect(() => {
-    // Create AudioContext lazily to avoid issues with browser autoplay policies
-    return () => {
-      // Clean up AudioContext on unmount
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
+  const [, copy] = useCopyToClipboard();
 
   const handleCopy = useCallback(async () => {
     if (copied) return; // Prevent multiple clicks while already copied
@@ -35,7 +23,7 @@ export const CopyToClipboard = ({ text }: { text: string }) => {
     } catch (error) {
       console.error("Failed to copy text:", error);
     }
-  }, [text, copied]);
+  }, [text, copied, copy]);
 
   return (
     <Button

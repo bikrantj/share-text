@@ -4,9 +4,8 @@ import { Callout } from "@/components/ui/callout";
 import { CopyToClipboard } from "@/components/ui/copy-to-clipboard";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeRepository } from "@/repository/code-repository";
+import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { formatDistance, formatDistanceToNow } from "date-fns";
-import { getExpiryDifference } from "@/lib/utils";
 export default async function CodePage({
   params,
 }: {
