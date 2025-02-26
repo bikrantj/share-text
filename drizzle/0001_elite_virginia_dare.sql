@@ -1,1 +1,0 @@
-ALTER TABLE "codes" ADD COLUMN "expires_at" timestamp NOT NULL;

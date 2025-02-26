@@ -2,6 +2,7 @@ CREATE TABLE "codes" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "codes_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"code" varchar(4) NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
+	"expires_at" timestamp NOT NULL,
 	CONSTRAINT "codes_code_unique" UNIQUE("code")
 );
 --> statement-breakpoint
