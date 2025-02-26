@@ -1,52 +1,39 @@
-import * as schema from "@/db/schema";
-import {
-  drizzle as drizzlePg,
-  type NodePgDatabase,
-} from "drizzle-orm/node-postgres";
-import { migrate as migratePg } from "drizzle-orm/node-postgres/migrator";
-import { type PgliteDatabase } from "drizzle-orm/pglite";
-import { PHASE_PRODUCTION_BUILD } from "next/dist/shared/lib/constants";
-import path from "node:path";
-import { Client } from "pg";
-
-let client: Client;
-let drizzle: NodePgDatabase<typeof schema> | PgliteDatabase<typeof schema>;
-const dbUrl = process.env.DATABASE_URL;
-const isProduction = process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
-const globalScope = globalThis as unknown as {
-  client?: Client;
-  drizzle?: NodePgDatabase<typeof schema> | PgliteDatabase<typeof schema>;
+// src/db.ts
+import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { neon, neonConfig } from "@neondatabase/serverless";
+import { Pool } from "pg";
+import * as schema from "./schema";
+import { config } from "dotenv";
+if (process.env.NODE_ENV !== "production") {
+  config({ path: ".env.local" });
+}
+// Define a global type to store the database client
+type GlobalWithDB = typeof globalThis & {
+  dbClient?: ReturnType<typeof drizzlePg> | ReturnType<typeof drizzleNeon>;
 };
 
-// **Production - Use Neon Database**
-if (isProduction) {
-  client = new Client({
-    connectionString: dbUrl,
-    ssl: { rejectUnauthorized: false }, // Required for Neon
-  });
-  await client.connect();
+// Determine the environment
+const isProduction = process.env.NODE_ENV === "production";
 
-  drizzle = drizzlePg(client, { schema });
-  await migratePg(drizzle, {
-    migrationsFolder: path.join(process.cwd(), "migrations"),
-  });
-} else {
-  // **Development - Use Local Postgres, Remote Postgres, or PGlite**
-  if (!globalScope.client) {
-    if (dbUrl?.includes("localhost")) {
-      globalScope.client = new Client({
-        connectionString: dbUrl,
-      });
-      await globalScope.client.connect();
-      globalScope.drizzle = drizzlePg(globalScope.client, { schema });
-      await migratePg(globalScope.drizzle, {
-        migrationsFolder: path.join(process.cwd(), "migrations"),
-      });
-    }
+// Use a global variable to store the database client
+const globalWithDB = global as GlobalWithDB;
+
+// Initialize the database client if it doesn't exist
+if (!globalWithDB.dbClient) {
+  if (isProduction) {
+    // Neon HTTP client for production
+    neonConfig.fetchConnectionCache = true; // Enable connection pooling for Neon
+    const neonSql = neon(process.env.DATABASE_URL!);
+    globalWithDB.dbClient = drizzleNeon(neonSql, { schema });
+  } else {
+    // Local PostgreSQL client for development
+    const localPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
+    globalWithDB.dbClient = drizzlePg(localPool, { schema });
   }
-
-  client = globalScope.client!;
-  drizzle = globalScope.drizzle!;
 }
 
-export const db = drizzle;
+// Export the database client
+export const db = globalWithDB.dbClient;
