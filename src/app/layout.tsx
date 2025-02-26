@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SearchCode } from "@/components/search-code";
 import Link from "next/link";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,11 @@ export default function RootLayout({
             </Link>
             <p>Share your text with one-click</p>
           </div>
-          <SearchCode />
+          <Suspense
+            fallback={<div className="w-[150px] h-2 rounded-lg bg-muted"></div>}
+          >
+            <SearchCode />
+          </Suspense>
           {children}
         </div>
       </body>
