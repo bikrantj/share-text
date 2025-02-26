@@ -11,18 +11,14 @@ export const CopyToClipboard = ({ text }: { text: string }) => {
 
   const handleCopy = useCallback(async () => {
     if (copied) return; // Prevent multiple clicks while already copied
-    console.log("Handle copy");
-    try {
-      copy(text);
-      setCopied(true);
 
-      // Reset after 2 seconds
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to copy text:", error);
-    }
+    copy(text);
+    setCopied(true);
+
+    // Reset after 2 seconds
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   }, [text, copied, copy]);
 
   return (

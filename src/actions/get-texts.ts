@@ -1,17 +1,13 @@
-"use server";
-import { actionClient } from "@/lib/server-action";
-import { CodeRepository } from "@/repository/code-repository";
-import { TextRepository } from "@/repository/text-repository";
-import { z } from "zod";
-const GetTextSchema = z.object({
-  code: z.string().min(1).max(4),
+import { ResponseData } from "@/app/api/text/route";
+import { getBaseUrl } from "@/lib/utils";
+import { cache } from "react";
+
+export const getTexts = cache(async (code: string) => {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/text?code=${code}`);
+  const data = (await res.json()) as ResponseData<{
+    texts: string[];
+    expiresAt: Date;
+  }>;
+  return data;
 });
-export const getTexts = actionClient
-  .schema(GetTextSchema)
-  .action(async ({ parsedInput }) => {
-    const code = parsedInput.code;
-    const codeData = await CodeRepository.find(code);
-    if (!codeData) return null;
-    const texts = await TextRepository.findMany(codeData.id);
-    return texts;
-  });

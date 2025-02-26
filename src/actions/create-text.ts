@@ -9,8 +9,6 @@ import { textSchema } from "@/schemas/text-schema";
 export const createText = actionClient
   .schema(textSchema)
   .action(async ({ parsedInput }) => {
-    console.log(parsedInput);
-    // Generate a 4 digit code
     try {
       if (!parsedInput.length) throw new Error("No text provided");
       let newCode: string;
@@ -25,11 +23,8 @@ export const createText = actionClient
       parsedInput.forEach(async (text) => {
         await TextRepository.create(text, code.id);
       });
-
-      console.log(code);
       return { success: true, code: newCode };
-    } catch (error) {
-      console.log("Server action error!", error);
+    } catch {
       return { success: false, code: null };
     }
   });

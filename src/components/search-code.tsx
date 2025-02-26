@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { getTexts } from "@/actions/get-texts";
 
 export const SearchCode = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [code, setCode] = useState<string>("");
   const [inSearchPage, setInSearchPage] = useState<boolean>(false);
 
@@ -46,7 +47,10 @@ export const SearchCode = () => {
   };
 
   // Handle search action
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    setIsLoading(true);
+    await getTexts(code);
+    setIsLoading(false);
     router.push(`/${code}`);
   };
 
@@ -67,8 +71,14 @@ export const SearchCode = () => {
         value={code}
         onChange={handleInputChange}
         maxLength={4}
+        disabled={isLoading}
       />
-      <Button disabled={code.length < 4} type="submit" onClick={handleSearch}>
+      <Button
+        disabled={code.length < 4}
+        isLoading={isLoading}
+        type="submit"
+        onClick={handleSearch}
+      >
         Search
       </Button>
     </form>

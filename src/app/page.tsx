@@ -64,7 +64,6 @@ export default function Home() {
   }, [textAreas.size]);
   // Focus the last added textarea when it changes
   useEffect(() => {
-    console.log("Changing focus!!");
     if (lastAddedIdRef.current) {
       const textarea = textareaRefs.current.get(lastAddedIdRef.current);
       if (textarea) {
@@ -84,7 +83,6 @@ export default function Home() {
   };
 
   const handleShare = () => {
-    console.log(textAreas);
     const texts = Array.from(textAreas.values()).filter(Boolean);
     if (!texts.length) return;
     execute(texts);
@@ -108,8 +106,8 @@ export default function Home() {
           </div>
         )}
         <div className="flex-1 justify-end flex">
-          <Button onClick={handleShare} disabled={isExecuting}>
-            {isExecuting ? "Sharing..." : "Share"}
+          <Button onClick={handleShare} isLoading={isExecuting}>
+            Share
           </Button>
         </div>
       </div>
